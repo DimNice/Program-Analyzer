@@ -133,6 +133,39 @@ class GUI(QWidget):
             self.target_files.pop(row)
             self.showFileContent()
 
+    def showFileContent(self):
+        self.code_text.clear()
+        row = self.file_list.currentRow()
+        if row != -1:
+            file = self.target_files[row]
+            self.code_label.setText("Листинг программы: " + file.path)
+
+            for i in range(len(file.source)):
+                self.code_text.append(f"{i + 1:3}.   {file.source[i].rstrip()}")
+
+            # scroll log to show the selected file
+            # (strangely, it requires both this lines)
+            self.log.find(file.path)
+            self.log.find(file.path, QTextDocument.FindBackward)
+        else:
+            self.code_label.setText("Листинг программы:")
+
+    def updateCheckboxes(self):
+        """Set only checkboxes for vulns listed in file headers.
+        (If there are some headers.)
+        """
+        detectors = set()
+
+        for file in self.target_files:
+            detectors |= file.detectors
+
+        # use all if none specified
+        if not detectors:
+            detectors = self.vulns
+
+        for k, cb in self.vulns.items():
+            cb.setChecked(k in detectors)
+
     def genRandTest(self):
         self.genTest(None)
 
@@ -143,3 +176,66 @@ class GUI(QWidget):
         source = TestGenerator.gen_test(vulns).split("\n")
         self.addFile(FileInfo(f"gen-tests/test{self.gen_test_num}.cpp", source))
         self.gen_test_num += 1
+
+    def analyzeAll(self):
+        self.analyzeFiles(*self.target_files)
+
+    def analyzeOne(self):
+        row = self.file_list.currentRow()
+        if row != -1:
+            self.analyzeFiles(self.target_files[row])
+
+    def analyzeFiles(self, *files):
+        self.log.clear()
+        self.full_log += f"### Анализатор запущен {datetime.datetime.now()}\n\n"
+
+        for file in files:
+            self.log.append(f"Результат для файла {file.path}:")
+            all_found = 0
+
+            for name, cb in self.vulns.items():
+                if not cb.isChecked():
+                    continue
+
+                try:
+                    errors = CodeAnalyzer.find_vulns(file.source, name)
+
+                    if errors:
+                        msg = f" в строках: {[l + 1 for l in errors]}"
+                    else:
+                        msg = ": не обнаружено"
+                except:
+                    msg = ": не удалось провести проверку, анализируемый код некорректен!"
+                    # raise
+
+                self.log.append(f"  {test_lib.vuln_dict[name]}{msg}")
+                all_found += len(errors)
+
+                marked = file.vulns[name]
+                if marked and marked != errors:
+                    self.log.append(f"     Маркированы: {[x + 1 for x in marked]}")
+
+            self.log.append(f"  Всего найдено уязвимостей: {all_found}")
+            self.log.append("")
+
+        self.full_log += self.log.document().toPlainText() + "\n\n"
+
+    def saveFile(self):
+        row = self.file_list.currentRow()
+        if row != -1:
+            file = self.target_files[row]
+            path, _ = QFileDialog.getSaveFileName(self, None, file.path)
+            if path:
+                with open(path, "w") as f:
+                    f.write("\n".join(file.source))
+
+                # update the path where necessary
+                file.path = path
+                self.file_list.currentItem().setText(path)
+
+    def saveLog(self):#когда то будетт) (возможно)
+        fname = f"logs/log-{datetime.datetime.now():%Y-%m-%d-%H-%M-%S}.txt"
+        path, _ = QFileDialog.getSaveFileName(self, None, fname)
+        if path:
+            with open(path, "w") as f:
+                f.write(self.full_log)
