@@ -42,7 +42,7 @@ def sql_injection(source):
     variables = set()
     dangerous_variables = set()
 
-    for i, line in enumerate(source):
+    for i, line in enumerate(source): # ищем переменные из variables в сканф и т д. если нашли - то переменная данжерос
         for d in CodeAnalyzer.var_declarations(line):
             variables.add(d.name)
             
