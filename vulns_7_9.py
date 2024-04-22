@@ -15,7 +15,7 @@ def bad_file_access(source):
             char_name = char_name.split(',')[0]
             if char_name != "":
                 files.append(char_name)
-            for num in range(i - 10, i):
+            for num in range(i - 10, i):#
                 if num in range(len(source)):
                     for func in safe_functions:
                         if source[num].find(func) != -1 and source[num].find(char_name) != -1:
@@ -40,7 +40,7 @@ def null_pointer_derefence(source):
                 if d.is_pointer():
                     pointers.add(d.name)
         else:
-            if "if (" in line:#проверка на то, что указатель свободен
+            if "if (" in line:#проверка на то, что указатель свободен ---------------delete
                 for ptr in pointers:
                     if re.search(f"\\b{ptr}\\b", line):
                         safe_pointers.add(ptr)
@@ -154,3 +154,5 @@ def number_overflow(source):
         if abs(numervalues[i]) > int_max_val:
             error.append(numberplaces[i])
     return error
+
+
