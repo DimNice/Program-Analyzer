@@ -1,14 +1,22 @@
-from PyQt5.QtWidgets import *
-import re
 from collections import defaultdict
-import test_libs
+import datetime
+import re
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QTextDocument
+
+from code_analyzer import CodeAnalyzer
+from test_generator import TestGenerator
+import test_lib
+
+
 class FileInfo:
     def __init__(self, path, source):
         self.path = path
         self.source = source
         self.detectors = set()
         self.vulns = defaultdict(list)  # a set of lines for each vuln_code
-
+        
         # Parse vulnerability markers.
         # Lines like "// !test vuln_code" tell that this detector
         # should be enabled for this file.
@@ -29,7 +37,7 @@ class GUI(QWidget):
         self.target_files = list()
         self.full_log = ""
         self.gen_test_num = 1
-
+        
         # buttons
         top_panel = QHBoxLayout()
         col1 = QVBoxLayout()
@@ -41,7 +49,7 @@ class GUI(QWidget):
         butt = QPushButton("Исключить")
         butt.clicked.connect(self.deleteFile)
         col1.addWidget(butt)
-
+        
         col2 = QVBoxLayout()
         top_panel.addLayout(col2)
         col2.addWidget(QLabel("Сгенерировать тест"))
@@ -51,7 +59,7 @@ class GUI(QWidget):
         butt = QPushButton("С выбранными уязвимостями")
         butt.clicked.connect(self.genRegTest)
         col2.addWidget(butt)
-
+        
         col3 = QVBoxLayout()
         top_panel.addLayout(col3)
         col3.addWidget(QLabel("Запустить анализ кода"))
@@ -61,7 +69,7 @@ class GUI(QWidget):
         butt = QPushButton("Все файлы")
         butt.clicked.connect(self.analyzeAll)
         col3.addWidget(butt)
-
+        
         col4 = QVBoxLayout()
         top_panel.addLayout(col4)
         col4.addWidget(QLabel("Сохранить на диск"))
@@ -71,17 +79,17 @@ class GUI(QWidget):
         butt = QPushButton("Лог действий")
         butt.clicked.connect(self.saveLog)
         col4.addWidget(butt)
-
+        
         # file list
         left_panel = QVBoxLayout()
         left_panel.addWidget(QLabel("Путь к файлу:"))
         self.file_list = QListWidget()
         self.file_list.clicked.connect(self.showFileContent)
         left_panel.addWidget(self.file_list)
-
+        
         # vulnerabilities
         left_panel.addWidget(QLabel("Выберите уязвимости для поиска:"))
-        self.vulns = {k: QCheckBox(v) for k, v in test_libs.vuln_dict.items()}
+        self.vulns = {k: QCheckBox(v) for k, v in test_lib.vuln_dict.items()}
         for cb in self.vulns.values():
             left_panel.addWidget(cb)
 
@@ -98,7 +106,7 @@ class GUI(QWidget):
         self.log = QTextEdit()
         self.log.setReadOnly(True)
         self.log.setFontFamily("monospace")
-        self.log.append("Добро пожаловать в анализатор уязвимостей от бригады №4 группы 6411!")
+        self.log.append("Добро пожаловать в анализатор уязвимостей группы 6411!")
 
         # combined layout
         panels = QHBoxLayout()
@@ -109,7 +117,7 @@ class GUI(QWidget):
         layout.addLayout(panels)
         layout.addWidget(self.log)
         self.setLayout(layout)
-
+        
         self.showFileContent()
         self.show()
 
@@ -139,32 +147,35 @@ class GUI(QWidget):
         if row != -1:
             file = self.target_files[row]
             self.code_label.setText("Листинг программы: " + file.path)
-
+            
             for i in range(len(file.source)):
                 self.code_text.append(f"{i + 1:3}.   {file.source[i].rstrip()}")
-
+                
             # scroll log to show the selected file
             # (strangely, it requires both this lines)
             self.log.find(file.path)
             self.log.find(file.path, QTextDocument.FindBackward)
         else:
             self.code_label.setText("Листинг программы:")
-
+        
+        self.updateCheckboxes()
+        
     def updateCheckboxes(self):
         """Set only checkboxes for vulns listed in file headers.
         (If there are some headers.)
         """
         detectors = set()
-
+        
         for file in self.target_files:
             detectors |= file.detectors
 
         # use all if none specified
         if not detectors:
             detectors = self.vulns
-
+            
         for k, cb in self.vulns.items():
             cb.setChecked(k in detectors)
+
 
     def genRandTest(self):
         self.genTest(None)
@@ -188,7 +199,7 @@ class GUI(QWidget):
     def analyzeFiles(self, *files):
         self.log.clear()
         self.full_log += f"### Анализатор запущен {datetime.datetime.now()}\n\n"
-
+        
         for file in files:
             self.log.append(f"Результат для файла {file.path}:")
             all_found = 0
@@ -196,10 +207,10 @@ class GUI(QWidget):
             for name, cb in self.vulns.items():
                 if not cb.isChecked():
                     continue
-
+                
                 try:
                     errors = CodeAnalyzer.find_vulns(file.source, name)
-
+                    
                     if errors:
                         msg = f" в строках: {[l + 1 for l in errors]}"
                     else:
@@ -210,14 +221,14 @@ class GUI(QWidget):
 
                 self.log.append(f"  {test_lib.vuln_dict[name]}{msg}")
                 all_found += len(errors)
-
+                
                 marked = file.vulns[name]
                 if marked and marked != errors:
                     self.log.append(f"     Маркированы: {[x + 1 for x in marked]}")
-
+                    
             self.log.append(f"  Всего найдено уязвимостей: {all_found}")
             self.log.append("")
-
+        
         self.full_log += self.log.document().toPlainText() + "\n\n"
 
     def saveFile(self):
@@ -233,9 +244,9 @@ class GUI(QWidget):
                 file.path = path
                 self.file_list.currentItem().setText(path)
 
-    def saveLog(self):#когда то будетт) (возможно)
+    def saveLog(self):
         fname = f"logs/log-{datetime.datetime.now():%Y-%m-%d-%H-%M-%S}.txt"
         path, _ = QFileDialog.getSaveFileName(self, None, fname)
         if path:
             with open(path, "w") as f:
-                f.write(self.full_log)
+                f.write(self.log)

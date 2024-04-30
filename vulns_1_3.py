@@ -11,6 +11,7 @@ def buffer_overflow(source):
         for f in not_safe_functions:
             if f in source[i] and f + '_s' not in source[i]:
                 error.append(i)
+    print(error)
     return error
 
 
