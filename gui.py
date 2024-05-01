@@ -249,4 +249,4 @@ class GUI(QWidget):
         path, _ = QFileDialog.getSaveFileName(self, None, fname)
         if path:
             with open(path, "w") as f:
-                f.write(self.log)
+                f.write(self.full_log)

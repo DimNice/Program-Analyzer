@@ -19,9 +19,8 @@ def bad_file_access(source):
 
             #for num in range(i - 10, i):#
         if ('fclose' in source[i]) or ('.close' in source[i]):
-            if num in range(len(source)):
                 for func in safe_functions:
-                     if source[num].find(func) != -1 and source[num].find(char_name) != -1:
+                     if source[i].find(func) != -1 and source[i].find(char_name) != -1:
                         if char_name in files:
                             files.remove(char_name)
                             del error [char_name]
