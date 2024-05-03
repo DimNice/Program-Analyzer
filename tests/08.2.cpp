@@ -1,7 +1,8 @@
 // !test null_pointer_derefence
 
-#include <iostream>  // безуязвимости
-    class Test{
+#include <iostream>  // without
+class Test
+{
     public:
         int a;
         int b;
@@ -11,9 +12,15 @@
         int setA(){
             return a;
         }
-    };
-    int main(){
-        Test * tst = 0;
+};
+
+int main()
+{
+        Test * tst = new Test();
+        if (tst != nullptr) {
+            tst->printData();
+            delete tst;
+        }
         cout << "Hello, world!" << endl;
         return 0;
-    }
+}

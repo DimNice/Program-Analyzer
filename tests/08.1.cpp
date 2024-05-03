@@ -1,20 +1,13 @@
-// !test null_pointer_derefence
+#include <iostream>
+class A {
+        public:
+            void bar() {
+                std::cout << "Test!\n";
+            }
+};
 
-#include <iostream> // суязвимостью
-    class Test{
-    public:
-        int a;
-        int b;
-        void printData(){
-            cout << a << ", " << b << endl;
-        }
-        int setA(){
-            return a;
-        }
-    };
-    int main(){
-        Test * tst = 0;
-        cout << "Hello, world!" << endl;
-        tst->printData();
-        return 0;
-    }
+int main() {  //with
+    A* a = 0;
+    a->bar();
+    return 0;
+}

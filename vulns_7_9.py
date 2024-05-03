@@ -5,7 +5,7 @@ from code_analyzer import CodeAnalyzer
 
 @CodeAnalyzer.register
 def bad_file_access(source):
-    error = {}
+    error = []
     safe_functions = ['access']
     files = []
     for i in range(len(source)):
@@ -15,16 +15,17 @@ def bad_file_access(source):
             char_name = char_name.split(',')[0]
             if char_name != "":
                 files.append(char_name)
-                error[char_name] = i
-
-            #for num in range(i - 10, i):#
-        if ('fclose' in source[i]) or ('.close' in source[i]):
-                for func in safe_functions:
-                     if source[i].find(func) != -1 and source[i].find(char_name) != -1:
-                        if char_name in files:
-                            files.remove(char_name)
-                            del error [char_name]
-    return error.values()
+            for num in range(0, i):
+                if num in range(len(source)):
+                    for func in safe_functions:
+                        if source[num].find(func) != -1 and source[num].find(char_name) != -1:
+                            if char_name in files:
+                                files.remove(char_name)
+    for file in files:
+        for j in range(len(source)):
+            if file in source[j] and ('fopen(' in source[j] or '.open(' in source[j]):
+                error.append(j)
+    return error
 
 
 @CodeAnalyzer.register
@@ -39,7 +40,7 @@ def null_pointer_derefence(source):
                 if d.is_pointer():
                     pointers.add(d.name)
         else:
-            if "if (" in line:#проверка на то, что указатель свободен ---------------delete
+            if "if (" in line:
                 for ptr in pointers:
                     if re.search(f"\\b{ptr}\\b", line):
                         safe_pointers.add(ptr)

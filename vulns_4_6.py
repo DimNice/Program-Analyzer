@@ -54,7 +54,7 @@ def memory_leak(source):
         for d in CodeAnalyzer.var_declarations(line):
             variables.add(d.name)
             
-        if "new" in line or "malloc" in line:
+        if "new " in line or "malloc" in line:
             for var in variables:
                 if re.search(f"\\b{var}\\b", line):
                     dangerous_variables[var].add(i)

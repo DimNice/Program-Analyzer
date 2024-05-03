@@ -124,7 +124,7 @@ class GUI(QWidget):
     def openFiles(self):
         paths, _ = QFileDialog.getOpenFileNames(self, None, "tests/")
         for file_path in paths:
-            with open(file_path) as f:
+            with open(file_path, encoding='utf-8') as f:
                 source = f.read().split("\n")
             self.addFile(FileInfo(file_path, source))
 
@@ -237,7 +237,7 @@ class GUI(QWidget):
             file = self.target_files[row]
             path, _ = QFileDialog.getSaveFileName(self, None, file.path)
             if path:
-                with open(path, "w") as f:
+                with open(path, "w", encoding='utf-8') as f:
                     f.write("\n".join(file.source))
 
                 # update the path where necessary
@@ -248,5 +248,5 @@ class GUI(QWidget):
         fname = f"logs/log-{datetime.datetime.now():%Y-%m-%d-%H-%M-%S}.txt"
         path, _ = QFileDialog.getSaveFileName(self, None, fname)
         if path:
-            with open(path, "w") as f:
+            with open(path, "w", encoding='utf-8') as f:
                 f.write(self.full_log)
