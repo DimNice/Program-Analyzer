@@ -1,7 +1,7 @@
 // !test number_overflow
 
-#include<iostream> // суязвимостью
-usingnamespacestd;
+#include<iostream>  // with
+using namespace std;
 
 int main()
 {
