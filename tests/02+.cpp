@@ -1,17 +1,12 @@
 // !test format_string_error
 // !test warn_format_string_error
+#include <cstdio>
 
-#include<stdio.h>
+int main(int argc, char *argv[]) {
+    char buffer[100];
+    char format[200]= "Hello!";
 
-int main(){
-  char str[80];
-  gets(str);
-  int a = 5, b = null;
-  for (int i =0; i<80; ++i)
-    cout<<str[i];
-  cout<<"";
-  for (int i =0; i<80; ++i)
-    cout<<str[i];
-  cout << "" << a << "" << b << endl;
-  return 0;
+    printf("%s", format);
+
+    return 0;
 }

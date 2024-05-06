@@ -1,29 +1,32 @@
 // !test race_condition
+#include <iostream>
+#include <thread>
+#include <mutex>
+using namespace std;
 
-int x = 10, y = 1;
+pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
+int counter = 0;
 
-DWORD WINAPI TestFunc1(void* tmp) {
-    x++;
-    y++;
-}
-
-DWORD WINAPI TestFunc2 (void* tmp) {
-    if (x % 2 == 0) {
-        x = x - 1;
-        printf("x = %d\n", x);
-    }
-}
-
-DWORD WINAPI TestFunc3 (void* tmp) {
-    int a = 5;
-    a += x + y;
-    printf("a+x+y = %d\n", a);
+void* incrementCounter(void*) {
+    pthread_mutex_lock(&mutex);
+    counter++;
+    pthread_mutex_unlock(&mutex);
+    return NULL;
 }
 
 int main() {
-    DWORD thread1, thread2, thread3;
-  
-    CreateThread(NULL, 0, TestFunc1, NULL, 0, &thread1);
-    CreateThread(NULL, 0, TestFunc2, NULL, 0, &thread2);
-    CreateThread(NULL, 0, TestFunc3, NULL, 0, &thread3);
+    pthread_t t1, t2;
+
+    pthread_create(&t1, NULL, incrementCounter, NULL); // Первый поток увеличивает счетчик
+    pthread_create(&t2, NULL, incrementCounter, NULL); // Второй поток также увеличивает счетчик
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    std::cout << "Значение счетчика: " << counter << std::endl; // Выводим значение счетчика
+
+    pthread_cancel(t1);
+    pthread_cancel(t2);
+
+    return 0;
 }

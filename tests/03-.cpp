@@ -10,6 +10,7 @@ int main(){
   db.setPassworld("1uTbSbAs");
   bool ok = db.open();
   QSqlQuery query;
+  char* login;
   scanf("%s",login);
   query.exec("SELECT name, salary FROM employee WHERE login ='"+ login + "';");//
   return 0;

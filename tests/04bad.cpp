@@ -9,5 +9,5 @@ int main(){
   cout << "Введите строку: " << endl;
   cin >> s;
   system(s);
-  retutn 0;
+  return 0;
 }

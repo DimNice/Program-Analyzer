@@ -3,7 +3,7 @@ import re
 
 from code_analyzer import CodeAnalyzer
 
-FUNC_START_RE = re.compile(r"[a-zA-Z_][a-zA-Z_0-9]* ([a-zA-Z_][a-zA-Z_0-9]*)\s*\(.*\) {")
+FUNC_START_RE = re.compile(r"[a-zA-Z_][a-zA-Z_0-9]+\*? ([a-zA-Z_][a-zA-Z_0-9]*)\s*\(.*\) {")
 THREAD_CREATE_RE = re.compile(r"(?:pthread_create|CreateThread)\([^,]+, [^,]+, &?([a-zA-Z_][a-zA-Z_0-9]*)")
 MUTEX_LOCK_RE = re.compile(r"pthread_mutex_lock\(|WaitForSingleObject\(")
 
