@@ -4,6 +4,7 @@ import re
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QTextDocument
+from PyQt5.QtWidgets import QMessageBox
 
 from code_analyzer import CodeAnalyzer
 from test_generator import TestGenerator
@@ -121,12 +122,15 @@ class GUI(QWidget):
         self.showFileContent()
         self.show()
 
+
     def openFiles(self):
-        paths, _ = QFileDialog.getOpenFileNames(self, None, "tests/")
+        paths, _ = QFileDialog.getOpenFileNames(self, None, "tests/", "C/C++ Source Files (*.c *.cpp *.h *.hpp)")
         for file_path in paths:
-            with open(file_path, encoding='utf-8') as f:
+            with open(file_path) as f:
                 source = f.read().split("\n")
             self.addFile(FileInfo(file_path, source))
+
+
 
     def addFile(self, file):
         self.file_list.addItem(file.path)
@@ -159,6 +163,7 @@ class GUI(QWidget):
             self.code_label.setText("Листинг программы:")
         
         self.updateCheckboxes()
+
         
     def updateCheckboxes(self):
         """Set only checkboxes for vulns listed in file headers.
